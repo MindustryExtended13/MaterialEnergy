@@ -15,7 +15,7 @@ public class Cable extends LayerBlock {
         layers = List.of(new DrawAtlas() {{
             prefix = "";
             boolf = (tile, self) -> XBlocks.isTheSameBlock(tile.build, Cable.this)
-                    || tile.build instanceof IMaterialEnergyBuilding;
+                    || (tile.build instanceof IMaterialEnergyBuilding b && b.canConnectTo(self));
             boolfHeme = (tile, self, other) -> other != null && (self.block == other.block
                     || other.block instanceof IMaterialEnergyBlock);
         }});

@@ -39,8 +39,8 @@ dependencies {
     compileOnly "com.github.Anuken.MindustryJitpack:core:$mindustryVersion"
     implementation "com.github.TheEE145:TheMindustryModdingCore:v$modCoreVersion"
 
-    implementation files("tmp/layers.jar")
-    implementation files("tmp/intergration.jar")
+    implementation "com.github.MindustryExtended13.Me13Core:layers:1.3y"
+    implementation "com.github.MindustryExtended13.Me13Core:intergration:1.3y"
 
     //other (gson need for mod core)
     implementation 'com.google.code.gson:gson:2.10.1'
