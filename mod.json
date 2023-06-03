@@ -1,28 +1,19 @@
 {
-  "displayName": "Java Mod Template",
-  "name": "example-java-mod",
-  "author": "You",
-  "main": "example.ExampleJavaMod",
-  "description": "A Mindustry Java mod template.",
+  "displayName": "Material Energy",
+  "name": "me",
+  "author": "TheEE145",
+  "main": "me13.me.MaterialEnergy",
+  "description": "A Mindustry Java mod that adds ME network",
   "version": 1.0,
   "minGameVersion": 140,
   "java": true,
   "contributors": {
     "append": true,
-    "list": [
-      {
-        "name": "Some contributor",
-        "freesound": false
-      },
-      {
-        "name": "ScreamStudio",
-        "freesound": "true"
-      }
-    ]
+    "list": []
   },
   "repository": {
-    "name": "repo-name",
-    "user": "yourGithubName"
+    "name": "MaterialEnergy",
+    "user": "MindustryExtended13"
   },
   "bundleCreation": {
     "enabled": true,
@@ -32,15 +23,12 @@
       "named": false
     },
     "postTime": 5,
-    "ignoredToScan": [
-      "example-java-mod-example-block2",
-      "betamindy-chest-large"
-    ]
+    "ignoredToScan": []
   },
   "coreSettings": {
     "throwExceptionIntoDialog": true,
     "fixOtherModsRepository": false,
-    "customLoggerPrefix": "example",
+    "customLoggerPrefix": "ME13",
     "useCustomLoggerPrefix": true,
     "hasErrorRegion": false
   }
