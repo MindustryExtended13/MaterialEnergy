@@ -1,0 +1,47 @@
+{
+  "displayName": "Java Mod Template",
+  "name": "example-java-mod",
+  "author": "You",
+  "main": "example.ExampleJavaMod",
+  "description": "A Mindustry Java mod template.",
+  "version": 1.0,
+  "minGameVersion": 140,
+  "java": true,
+  "contributors": {
+    "append": true,
+    "list": [
+      {
+        "name": "Some contributor",
+        "freesound": false
+      },
+      {
+        "name": "ScreamStudio",
+        "freesound": "true"
+      }
+    ]
+  },
+  "repository": {
+    "name": "repo-name",
+    "user": "yourGithubName"
+  },
+  "bundleCreation": {
+    "enabled": true,
+    "scanType": {
+      "mods": false,
+      "local": true,
+      "named": false
+    },
+    "postTime": 5,
+    "ignoredToScan": [
+      "example-java-mod-example-block2",
+      "betamindy-chest-large"
+    ]
+  },
+  "coreSettings": {
+    "throwExceptionIntoDialog": true,
+    "fixOtherModsRepository": false,
+    "customLoggerPrefix": "example",
+    "useCustomLoggerPrefix": true,
+    "hasErrorRegion": false
+  }
+}

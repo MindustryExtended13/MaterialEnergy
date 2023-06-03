@@ -1,0 +1,119 @@
+apply plugin: "java"
+version '1.0'
+
+targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_16
+
+sourceSets.main {
+    java.srcDirs = ["src"]
+    resources.srcDirs = ["assets"]
+}
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url 'https://www.jitpack.io'
+    }
+}
+
+ext {
+    modCoreVersion = '1.0.4b'
+    mindustryVersion = 'v141'
+    jabelVersion = "93fde537c7"
+    sdkRoot = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT")
+}
+
+allprojects {
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            options.compilerArgs.addAll(['--release', '16'])
+        }
+    }
+}
+
+dependencies {
+    //core
+    annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
+    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
+    compileOnly "com.github.Anuken.MindustryJitpack:core:$mindustryVersion"
+
+    //implementation files("TheMindustryModdingCore-$modCoreVersion" + '.jar')
+    implementation "com.github.TheEE145:TheMindustryModdingCore:v$modCoreVersion"
+
+    //other (gson need for mod core)
+    implementation 'com.google.code.gson:gson:2.10.1'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
+}
+
+//force arc version
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if(details.requested.group == 'com.github.Anuken.Arc') {
+            details.useVersion "$mindustryVersion"
+        }
+    }
+}
+
+task jarAndroid {
+    dependsOn "jar"
+
+    doLast{
+        if(!sdkRoot || !new File(sdkRoot as String).exists()) throw new GradleException(
+                "No valid Android SDK found. Ensure that ANDROID_HOME is set to your Android SDK directory."
+        )
+
+        def platformRoot = new File("$sdkRoot/platforms/").listFiles().sort().reverse().find{
+            f -> new File(f, "android.jar").exists()
+        }
+
+        if(!platformRoot) throw new GradleException(
+                "No android.jar found. Ensure that you have an Android platform installed."
+        )
+
+        //collect dependencies needed for desugaring
+        def dependencies = (configurations.compileClasspath.asList() +
+                configurations.runtimeClasspath.asList() + [new File(platformRoot, "android.jar")]).collect{
+
+            "--classpath $it.path"
+        }.join(" ")
+
+        //dex and desugar files - this requires d8 in your PATH
+        "d8 $dependencies --min-api 14 --output ${project.archivesBaseName}Android.jar ${project.archivesBaseName}Desktop.jar"
+            .execute(null, new File("$buildDir/libs")).waitForProcessOutput(System.out, System.err)
+    }
+}
+
+jar {
+    archiveFileName = "${project.archivesBaseName}Desktop.jar"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    from(rootDir) {
+        include "mod.json"
+        include "icon.png"
+    }
+}
+
+task deploy(type: Jar) {
+    dependsOn jarAndroid
+    dependsOn jar
+    archiveFileName = "${project.archivesBaseName}.jar"
+
+    from {[
+            zipTree("$buildDir/libs/${project.archivesBaseName}Desktop.jar"),
+            zipTree("$buildDir/libs/${project.archivesBaseName}Android.jar")
+    ]}
+
+    doLast {
+        delete {
+            delete "$buildDir/libs/${project.archivesBaseName}Desktop.jar"
+            delete "$buildDir/libs/${project.archivesBaseName}Android.jar"
+        }
+    }
+}
