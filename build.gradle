@@ -1,5 +1,5 @@
 apply plugin: "java"
-version '1.0.0'
+version '1.5.0'
 
 targetCompatibility = JavaVersion.VERSION_16
 sourceCompatibility = JavaVersion.VERSION_16
@@ -18,6 +18,7 @@ repositories {
 }
 
 ext {
+    ME13CoreVersion = '1.4'
     modCoreVersion = '1.0.6b'
     mindustryVersion = 'v144.3'
     jabelVersion = "93fde537c7"
@@ -39,8 +40,9 @@ dependencies {
     compileOnly "com.github.Anuken.MindustryJitpack:core:$mindustryVersion"
     implementation "com.github.TheEE145:TheMindustryModdingCore:v$modCoreVersion"
 
-    implementation "com.github.MindustryExtended13.Me13Core:layers:1.3y"
-    implementation "com.github.MindustryExtended13.Me13Core:intergration:1.3y"
+    implementation "com.github.MindustryExtended13.Me13Core:layers:$ME13CoreVersion"
+    implementation "com.github.MindustryExtended13.Me13Core:intergration:$ME13CoreVersion"
+    implementation "com.github.MindustryExtended13.Me13Core:text-draw:$ME13CoreVersion"
 
     //other (gson need for mod core)
     implementation 'com.google.code.gson:gson:2.10.1'

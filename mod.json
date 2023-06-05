@@ -1,5 +1,6 @@
 {
   "displayName": "Material Energy",
+  "subtitle": "It`s not Applied Energetics 2!",
   "name": "me",
   "author": "TheEE145",
   "main": "me13.me.MaterialEnergy",
@@ -23,7 +24,9 @@
       "named": false
     },
     "postTime": 5,
-    "ignoredToScan": []
+    "ignoredToScan": [
+      "me-terminal"
+    ]
   },
   "coreSettings": {
     "throwExceptionIntoDialog": true,

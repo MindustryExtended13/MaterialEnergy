@@ -7,20 +7,13 @@ import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import me13.core.intergration.IMaterialEnergyBlock;
 import me13.core.intergration.IMaterialEnergyBuilding;
-import me13.me.net.Netting;
 import me13.me.ui.TerminalDialog;
 import mindustry.gen.Building;
-import mindustry.gen.Tex;
-import mindustry.net.Net;
-import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.type.LiquidStack;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
 import net.tmmc.util.GraphBlock;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Terminal extends GraphBlock implements IMaterialEnergyBlock {
     public TextureRegion teamRegion;
@@ -41,6 +34,7 @@ public class Terminal extends GraphBlock implements IMaterialEnergyBlock {
         teamRegion = Core.atlas.find(name + "-team");
     }
 
+    @SuppressWarnings("unused")
     public class TerminalBuild extends GraphBlockBuild implements IMaterialEnergyBuilding {
         @Override
         public void buildConfiguration(Table table) {
@@ -98,6 +92,11 @@ public class Terminal extends GraphBlock implements IMaterialEnergyBlock {
         @Override
         public boolean canConnectTo(Building building) {
             return true;
+        }
+
+        @Override
+        public Seq<Building> getChildren() {
+            return proximity.copy().filter(b -> b != null && b.block instanceof Cable);
         }
     }
 }

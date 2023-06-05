@@ -1,6 +1,5 @@
 package me13.me.world.blocks;
 
-import arc.graphics.g2d.TextureRegion;
 import me13.core.intergration.IMaterialEnergyBlock;
 import me13.core.intergration.IMaterialEnergyBuilding;
 import me13.core.layers.blocks.LayerBlock;
@@ -18,6 +17,7 @@ public class Adapter extends LayerBlock implements IMaterialEnergyBlock {
         drawDefault = false;
     }
 
+    @SuppressWarnings("unused")
     public class AdapterBuild extends LayerBuild implements IMaterialEnergyBuilding {
         public boolean hasHost() {
             Building nearby = nearby();

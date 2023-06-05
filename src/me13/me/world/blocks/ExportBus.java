@@ -4,6 +4,7 @@ import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Point2;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.io.Reads;
@@ -17,12 +18,13 @@ import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.type.Liquid;
 import mindustry.type.LiquidStack;
+import mindustry.world.blocks.liquid.Conduit;
+import mindustry.world.blocks.production.Pump;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
-import net.tmmc.util.GraphBlock;
 import net.tmmc.util.IllegalItemSelection;
 
-public class ExportBus extends GraphBlock implements IMaterialEnergyBlock {
+public class ExportBus extends Prox {
     public TextureRegion item, liquid;
 
     public ExportBus(String name) {
@@ -30,9 +32,19 @@ public class ExportBus extends GraphBlock implements IMaterialEnergyBlock {
         outputsLiquid = true;
         acceptsItems = false;
         hasItems = hasLiquids = true;
-        itemCapacity = (int) (liquidCapacity = 10);
+        itemCapacity = (int) (liquidCapacity = 1);
         configurable = true;
         update = true;
+
+        config(Point2.class, (ExportBusBuild b, Point2 p) -> {
+            b.item = Vars.content.item(p.x);
+            b.liquid = Vars.content.liquid(p.y);
+        });
+
+        configClear((ExportBusBuild b) -> {
+            b.item = null;
+            b.liquid = null;
+        });
     }
 
     @Override
@@ -54,7 +66,7 @@ public class ExportBus extends GraphBlock implements IMaterialEnergyBlock {
         removeBar("items");
     }
 
-    public class ExportBusBuild extends GraphBlockBuild implements IMaterialEnergyBuilding {
+    public class ExportBusBuild extends ProxBuild {
         public Liquid liquid;
         public Item item;
 
@@ -62,7 +74,15 @@ public class ExportBus extends GraphBlock implements IMaterialEnergyBlock {
         public void updateTile() {
             dump(item);
             if(liquid != null) {
-                dumpLiquid(liquid);
+                for(Building building : proximity) {
+                    if(building != null && building.acceptLiquid(this, liquid)) {
+                        if(building.liquids.get(liquid) < building.block.liquidCapacity) {
+                            building.liquids.set(liquid, Math.min(building.liquids.get(liquid)+1,
+                                    building.block.liquidCapacity));
+                            liquids.remove(liquid, 1);
+                        }
+                    }
+                }
             }
 
             Seq<Building> seq = new Seq<>();
@@ -89,6 +109,11 @@ public class ExportBus extends GraphBlock implements IMaterialEnergyBlock {
                     }
                 }
             }
+        }
+
+        @Override
+        public Object config() {
+            return new Point2(item == null ? -1 : item.id, liquid == null ? -1 : liquid.id);
         }
 
         @Override
@@ -125,38 +150,6 @@ public class ExportBus extends GraphBlock implements IMaterialEnergyBlock {
         }
 
         @Override
-        public ItemStack acceptItem(ItemStack itemStack) {
-            var item = itemStack.item;
-            int accepted = Math.min(itemCapacity-items.get(item), itemStack.amount);
-            items.add(item, accepted);
-            return new ItemStack(item, itemStack.amount-accepted);
-        }
-
-        @Override
-        public ItemStack removeItem(ItemStack itemStack) {
-            var item = itemStack.item;
-            int removed = Math.min(items.get(item), itemStack.amount);
-            items.remove(item, removed);
-            return new ItemStack(item, removed);
-        }
-
-        @Override
-        public LiquidStack acceptLiquid(LiquidStack liquidStack) {
-            var liquid = liquidStack.liquid;
-            float accepted = Math.min(liquidCapacity-liquids.get(liquid), liquidStack.amount);
-            liquids.add(liquid, accepted);
-            return new LiquidStack(liquid, liquidStack.amount-accepted);
-        }
-
-        @Override
-        public LiquidStack removeLiquid(LiquidStack liquidStack) {
-            var liquid = liquidStack.liquid;
-            float removed = Math.min(liquids.get(liquid), liquidStack.amount);
-            liquids.remove(liquid, removed);
-            return new LiquidStack(liquid, removed);
-        }
-
-        @Override
         public boolean acceptItem(Building source, Item item) {
             return false;
         }
@@ -184,11 +177,6 @@ public class ExportBus extends GraphBlock implements IMaterialEnergyBlock {
         @Override
         public LiquidModule storageLiquid() {
             return new LiquidModule();
-        }
-
-        @Override
-        public boolean canConnectTo(Building building) {
-            return true;
         }
     }
 }
