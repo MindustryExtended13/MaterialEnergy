@@ -1,27 +1,35 @@
 package me13.me.world.blocks;
 
 import arc.struct.Seq;
+import me13.core.block.instance.AdvancedBlock;
 import me13.core.intergration.IMaterialEnergyBlock;
 import me13.core.intergration.IMaterialEnergyBuilding;
+import me13.me.net.Netting;
 import mindustry.gen.Building;
 import mindustry.type.ItemStack;
 import mindustry.type.LiquidStack;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
-import net.tmmc.util.GraphBlock;
 
-public class Prox extends GraphBlock implements IMaterialEnergyBlock {
+public class Prox extends AdvancedBlock implements IMaterialEnergyBlock {
     public Prox(String name) {
         super(name);
+        update = true;
     }
 
-    public class ProxBuild extends GraphBlockBuild implements IMaterialEnergyBuilding {
+    public class ProxBuild extends AdvancedBuild implements IMaterialEnergyBuilding {
         public Seq<Building> cableProximity = new Seq<>();
+        public boolean isNetEnabled = true;
 
         @Override
         public void onProximityUpdate() {
             super.onProximityUpdate();
             cableProximity = proximity.copy().filter(b -> b != null && b.block instanceof Cable);
+        }
+
+        @Override
+        public void updateTile() {
+            updateState();
         }
 
         @Override
@@ -84,6 +92,11 @@ public class Prox extends GraphBlock implements IMaterialEnergyBlock {
         @Override
         public boolean canConnectTo(Building building) {
             return true;
+        }
+
+        @Override
+        public void updateState() {
+            isNetEnabled = Netting.isNetEnabled(this);
         }
     }
 }

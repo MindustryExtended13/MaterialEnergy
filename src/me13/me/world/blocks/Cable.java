@@ -1,23 +1,21 @@
 package me13.me.world.blocks;
 
+import me13.core.block.instance.AdvancedBlock;
+import me13.core.block.instance.EnumTextureMapping;
+import me13.core.block.instance.Layer;
 import me13.core.intergration.IMaterialEnergyBlock;
 import me13.core.intergration.IMaterialEnergyBuilding;
-import me13.core.layers.blocks.LayerBlock;
-import me13.core.layers.layout.DrawAtlas;
-import net.tmmc.util.XBlocks;
 
-import java.util.List;
-
-public class Cable extends LayerBlock {
+public class Cable extends AdvancedBlock {
     public Cable(String name) {
         super(name);
-        drawDefault = false;
-        layers = List.of(new DrawAtlas() {{
-            prefix = "";
-            boolf = (tile, self) -> (XBlocks.isTheSameBlock(tile.build, Cable.this)
+        drawBase = false;
+        layers.add(new Layer(this, "-", EnumTextureMapping.TF_TYPE) {{
+            rotate = false;
+            hand = (self, other, tile) -> ((other != null && other.block instanceof Cable)
                     || (tile.build instanceof IMaterialEnergyBuilding b && b.canConnectTo(self)))
                     && tile.build != null && tile.build.team == self.team;
-            boolfHeme = (tile, self, other) -> other != null && (self.block == other.block
+            hand2 = (self, other, tile) -> other != null && (other.block instanceof Cable
                     || other.block instanceof IMaterialEnergyBlock);
         }});
     }

@@ -1,4 +1,4 @@
-package me13.me.world.blocks;
+package me13.me.world.blocks.bus;
 
 import arc.Core;
 import arc.graphics.Color;
@@ -9,20 +9,18 @@ import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
-import me13.core.intergration.IMaterialEnergyBlock;
 import me13.core.intergration.IMaterialEnergyBuilding;
+import me13.core.items.IllegalItemSelection;
 import me13.me.net.Netting;
+import me13.me.world.blocks.Prox;
 import mindustry.Vars;
 import mindustry.gen.Building;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.type.Liquid;
 import mindustry.type.LiquidStack;
-import mindustry.world.blocks.liquid.Conduit;
-import mindustry.world.blocks.production.Pump;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
-import net.tmmc.util.IllegalItemSelection;
 
 public class ExportBus extends Prox {
     public TextureRegion item, liquid;
@@ -34,7 +32,6 @@ public class ExportBus extends Prox {
         hasItems = hasLiquids = true;
         itemCapacity = (int) (liquidCapacity = 1);
         configurable = true;
-        update = true;
 
         config(Point2.class, (ExportBusBuild b, Point2 p) -> {
             b.item = Vars.content.item(p.x);
@@ -72,8 +69,9 @@ public class ExportBus extends Prox {
 
         @Override
         public void updateTile() {
+            super.updateTile();
             dump(item);
-            if(liquid != null) {
+            if(liquid != null && liquids.get(liquid) >= 1) {
                 for(Building building : proximity) {
                     if(building != null && building.acceptLiquid(this, liquid)) {
                         if(building.liquids.get(liquid) < building.block.liquidCapacity) {
@@ -85,26 +83,28 @@ public class ExportBus extends Prox {
                 }
             }
 
-            Seq<Building> seq = new Seq<>();
-            Netting.getConnections(this, seq);
-            if(item != null && items.get(item) < itemCapacity) {
-                for(var build : seq) {
-                    if(build instanceof IMaterialEnergyBuilding building && build != this) {
-                        var s = building.storage();
-                        if(s != null && s.has(item)) {
-                            acceptItem(building.removeItem(new ItemStack(item, 1)));
-                            break;
+            if(isNetEnabled) {
+                Seq<Building> seq = new Seq<>();
+                Netting.getConnections(this, seq);
+                if(item != null && items.get(item) < itemCapacity) {
+                    for(var build : seq) {
+                        if(build instanceof IMaterialEnergyBuilding building && build != this) {
+                            var s = building.storage();
+                            if(s != null && s.has(item)) {
+                                acceptItem(building.removeItem(new ItemStack(item, 1)));
+                                break;
+                            }
                         }
                     }
                 }
-            }
-            if(liquid != null && liquids.get(liquid) < liquidCapacity) {
-                for(var build : seq) {
-                    if(build instanceof IMaterialEnergyBuilding building && build != this) {
-                        var s = building.storageLiquid();
-                        if(s != null && s.get(liquid) > 0) {
-                            acceptLiquid(building.removeLiquid(new LiquidStack(liquid, 1)));
-                            break;
+                if(liquid != null && liquids.get(liquid) < liquidCapacity) {
+                    for(var build : seq) {
+                        if(build instanceof IMaterialEnergyBuilding building && build != this) {
+                            var s = building.storageLiquid();
+                            if(s != null && s.get(liquid) > 0) {
+                                acceptLiquid(building.removeLiquid(new LiquidStack(liquid, 1)));
+                                break;
+                            }
                         }
                     }
                 }

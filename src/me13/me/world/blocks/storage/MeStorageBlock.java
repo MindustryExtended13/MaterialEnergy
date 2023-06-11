@@ -1,5 +1,6 @@
-package me13.me.world.blocks;
+package me13.me.world.blocks.storage;
 
+import me13.core.block.instance.AdvancedBlock;
 import me13.core.intergration.IMaterialEnergyBlock;
 import me13.core.intergration.IMaterialEnergyBuilding;
 import mindustry.gen.Building;
@@ -9,9 +10,10 @@ import mindustry.type.Liquid;
 import mindustry.type.LiquidStack;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
-import net.tmmc.util.GraphBlock;
 
-public class MeStorageBlock extends GraphBlock implements IMaterialEnergyBlock {
+public class MeStorageBlock extends AdvancedBlock implements IMaterialEnergyBlock {
+    public int channels = 1;
+
     public MeStorageBlock(String name) {
         super(name);
     }
@@ -39,7 +41,7 @@ public class MeStorageBlock extends GraphBlock implements IMaterialEnergyBlock {
         return false;
     }
 
-    public class MeStorageBuild extends GraphBlockBuild implements IMaterialEnergyBuilding {
+    public class MeStorageBuild extends AdvancedBuild implements IMaterialEnergyBuilding {
         @Override
         public ItemStack acceptItem(ItemStack itemStack) {
             var item = itemStack.item;
@@ -70,6 +72,11 @@ public class MeStorageBlock extends GraphBlock implements IMaterialEnergyBlock {
             float removed = Math.min(liquids.get(liquid), liquidStack.amount);
             liquids.remove(liquid, removed);
             return new LiquidStack(liquid, removed);
+        }
+
+        @Override
+        public int getChannels() {
+            return channels;
         }
 
         @Override

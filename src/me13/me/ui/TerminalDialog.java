@@ -1,15 +1,14 @@
 package me13.me.ui;
 
+import arc.Core;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.util.Scaling;
-import me13.me.MaterialEnergy;
 import me13.me.net.Netting;
 import mindustry.gen.Building;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.ui.dialogs.BaseDialog;
-import net.tmmc.graphics.FDraw;
 
 public class TerminalDialog extends BaseDialog {
     public Building building;
@@ -28,14 +27,14 @@ public class TerminalDialog extends BaseDialog {
         cont.table(main -> {
             main.background(Tex.button);
             main.table(info -> {
-                info.image(MaterialEnergy.atlas3.get("its")).left().size(96).update(img -> {
+                info.image(Core.atlas.find("me-its")).left().size(96).update(img -> {
                     //rotate
                 });
             }).growX().left().top().row();
             main.pane(pane2 -> {
                 pane[0] = pane2;
             }).update(ignored -> {
-                int cols = (int) (FDraw.width(0.8f)/200);
+                int cols = (int) ((Core.scene.getWidth()*0.8)/200);
                 int i = 0;
                 pane[0].clearChildren();
                 for(var stack : Netting.getStorage(building)) {

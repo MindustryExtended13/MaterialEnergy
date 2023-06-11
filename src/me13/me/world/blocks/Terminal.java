@@ -5,17 +5,18 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
+import me13.core.block.instance.AdvancedBlock;
 import me13.core.intergration.IMaterialEnergyBlock;
 import me13.core.intergration.IMaterialEnergyBuilding;
+import me13.me.net.Netting;
 import me13.me.ui.TerminalDialog;
 import mindustry.gen.Building;
 import mindustry.type.ItemStack;
 import mindustry.type.LiquidStack;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
-import net.tmmc.util.GraphBlock;
 
-public class Terminal extends GraphBlock implements IMaterialEnergyBlock {
+public class Terminal extends AdvancedBlock implements IMaterialEnergyBlock {
     public TextureRegion teamRegion;
 
     public Terminal(String name) {
@@ -35,10 +36,14 @@ public class Terminal extends GraphBlock implements IMaterialEnergyBlock {
     }
 
     @SuppressWarnings("unused")
-    public class TerminalBuild extends GraphBlockBuild implements IMaterialEnergyBuilding {
+    public class TerminalBuild extends AdvancedBuild implements IMaterialEnergyBuilding {
         @Override
         public void buildConfiguration(Table table) {
-            new TerminalDialog(this).show();
+            if(Netting.isNetEnabled(this)) {
+                new TerminalDialog(this).show();
+            } else {
+                deselect();
+            }
         }
 
         @Override
@@ -67,6 +72,11 @@ public class Terminal extends GraphBlock implements IMaterialEnergyBlock {
         @Override
         public LiquidStack removeLiquid(LiquidStack liquidStack) {
             return null;
+        }
+
+        @Override
+        public int getChannels() {
+            return 1;
         }
 
         @Override

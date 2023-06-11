@@ -1,7 +1,7 @@
 apply plugin: "java"
 version '1.5.0'
 
-targetCompatibility = JavaVersion.VERSION_16
+targetCompatibility = 8
 sourceCompatibility = JavaVersion.VERSION_16
 
 sourceSets.main {
@@ -18,7 +18,7 @@ repositories {
 }
 
 ext {
-    ME13CoreVersion = '1.4'
+    ME13CoreVersion = 'v1.5'
     modCoreVersion = '1.0.6b'
     mindustryVersion = 'v144.3'
     jabelVersion = "93fde537c7"
@@ -28,7 +28,7 @@ ext {
 allprojects {
     tasks.withType(JavaCompile).tap {
         configureEach {
-            options.compilerArgs.addAll(['--release', '16'])
+            options.compilerArgs.addAll(['--release', '8'])
         }
     }
 }
@@ -38,15 +38,15 @@ dependencies {
     annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.MindustryJitpack:core:$mindustryVersion"
-    implementation "com.github.TheEE145:TheMindustryModdingCore:v$modCoreVersion"
 
-    implementation "com.github.MindustryExtended13.Me13Core:layers:$ME13CoreVersion"
-    implementation "com.github.MindustryExtended13.Me13Core:intergration:$ME13CoreVersion"
+    implementation "com.github.MindustryExtended13.Me13Core:items:$ME13CoreVersion"
+    implementation "com.github.MindustryExtended13.Me13Core:block:$ME13CoreVersion"
     implementation "com.github.MindustryExtended13.Me13Core:text-draw:$ME13CoreVersion"
+    implementation "com.github.MindustryExtended13.Me13Core:intergration:$ME13CoreVersion"
+    implementation "com.github.MindustryExtended13.Me13Core:configuration:$ME13CoreVersion"
 
-    //other (gson need for mod core)
-    implementation 'com.google.code.gson:gson:2.10.1'
     compileOnly 'org.jetbrains:annotations:23.0.0'
+    implementation "com.google.code.gson:gson:2.10.1"
 }
 
 //force arc version
@@ -82,7 +82,8 @@ task jarAndroid {
         }.join(" ")
 
         //dex and desugar files - this requires d8 in your PATH
-        "d8 $dependencies --min-api 14 --output ${project.archivesBaseName}Android.jar ${project.archivesBaseName}Desktop.jar"
+        """$sdkRoot/build-tools/30.0.3/d8.bat $dependencies --min-api 14 --output 
+${project.archivesBaseName}Android.jar ${project.archivesBaseName}Desktop.jar"""
             .execute(null, new File("$buildDir/libs")).waitForProcessOutput(System.out, System.err)
     }
 }

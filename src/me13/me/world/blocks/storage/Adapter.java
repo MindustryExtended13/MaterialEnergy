@@ -1,24 +1,24 @@
-package me13.me.world.blocks;
+package me13.me.world.blocks.storage;
 
+import me13.core.block.instance.AdvancedBlock;
 import me13.core.intergration.IMaterialEnergyBlock;
 import me13.core.intergration.IMaterialEnergyBuilding;
-import me13.core.layers.blocks.LayerBlock;
 import mindustry.gen.Building;
 import mindustry.type.ItemStack;
 import mindustry.type.LiquidStack;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
 
-public class Adapter extends LayerBlock implements IMaterialEnergyBlock {
+public class Adapter extends AdvancedBlock implements IMaterialEnergyBlock {
     public Adapter(String name) {
         super(name);
         rotate = true;
         quickRotate = true;
-        drawDefault = false;
+        drawBase = false;
     }
 
     @SuppressWarnings("unused")
-    public class AdapterBuild extends LayerBuild implements IMaterialEnergyBuilding {
+    public class AdapterBuild extends AdvancedBuild implements IMaterialEnergyBuilding {
         public boolean hasHost() {
             Building nearby = nearby();
             return nearby != null && nearby.team() == team();
@@ -83,6 +83,11 @@ public class Adapter extends LayerBlock implements IMaterialEnergyBlock {
                 }
             }
             return liquidStack;
+        }
+
+        @Override
+        public int getChannels() {
+            return (isItem() || isLiquid()) ? 1 : 0;
         }
 
         @Override

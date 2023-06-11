@@ -1,27 +1,20 @@
 package me13.me;
 
+import arc.Core;
 import arc.struct.Seq;
+import me13.me.configuration.MeConfiguration;
 import me13.me.content.MeBlocks;
+import me13.me.content.MeTech;
 import mindustry.Vars;
 import mindustry.ctype.UnlockableContent;
-import net.tmmc.annotations.Mod;
-import net.tmmc.ApplicationMod;
-import net.tmmc.graphics.ModAtlas;
-import net.tmmc.json.JsonMod;
-import net.tmmc.registry.ModContentRegistryEvent;
-import net.tmmc.util.ModLogger;
+import mindustry.mod.Mod;
 
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-@Mod
-public class MaterialEnergy extends ApplicationMod {
+public class MaterialEnergy extends Mod {
     private static final NavigableMap<Integer, String> suffixes = new TreeMap<>();
-
-    public static JsonMod modME;
-    public static ModLogger logger3;
-    public static ModAtlas atlas3;
 
     static {
         suffixes.put(1000, "K");
@@ -57,24 +50,22 @@ public class MaterialEnergy extends ApplicationMod {
         return result;
     }
 
-    {
-        contentLoad(() -> {
-            logger.info("Loading some example content.");
-        });
+    @Override
+    public void loadContent() {
+        MeBlocks.load();
+        MeTech.load();
 
-        init(() -> {
-            modME = loadedMod;
-            logger3 = logger;
-            atlas3 = atlas;
-
-            logger.info("Inited " + loadedMod.getDisplayName());
-            logger.info(loadedMod.getRepoURL());
+        Vars.content.blocks().forEach(block -> {
+            if(block.name.startsWith("me-erekir-")) {
+                String n = block.name.replace("erekir-", "");
+                block.localizedName = Core.bundle.get("block." + n + ".name");
+                block.description = Core.bundle.get("block." + n + ".description");
+            }
         });
     }
 
-    public MaterialEnergy() {
-        final var event = new ModContentRegistryEvent();
-        event.registry(MeBlocks.BLOCKS);
-        event.activate(this);
+    @Override
+    public void init() {
+        MeConfiguration.load();
     }
 }

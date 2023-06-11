@@ -2,8 +2,9 @@ package me13.me.net;
 
 import arc.struct.Seq;
 import me13.core.intergration.IMaterialEnergyBuilding;
-import me13.me.MaterialEnergy;
+import me13.me.configuration.Channels;
 import me13.me.world.blocks.Cable;
+import me13.me.world.blocks.Controller;
 import mindustry.gen.Building;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
@@ -44,6 +45,34 @@ public class Netting {
                 getConnections(b, buildings);
             }
         });
+    }
+
+    public static boolean isNetEnabled(Building building) {
+        return getChannels(building) <= getMaximumChannels(building);
+    }
+
+    public static int getMaximumChannels(Building building) {
+        var result = new Seq<Building>();
+        Netting.getConnections(building, result);
+        int channels = 0;
+        for(var build : result) {
+            if(build instanceof Controller.ControllerBuild controller) {
+                channels += controller.getChannelsAdd();
+            }
+        }
+        return channels + Channels.conf.getDefaultChannels();
+    }
+
+    public static int getChannels(Building building) {
+        var result = new Seq<Building>();
+        Netting.getConnections(building, result);
+        int channels = 0;
+        for(var build : result) {
+            if(build instanceof IMaterialEnergyBuilding building1) {
+                channels += building1.getChannels();
+            }
+        }
+        return channels;
     }
 
     public static LiquidStack[] getStorageLiquid(Building building2) {

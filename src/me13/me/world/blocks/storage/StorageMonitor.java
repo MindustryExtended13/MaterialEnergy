@@ -1,25 +1,23 @@
-package me13.me.world.blocks;
+package me13.me.world.blocks.storage;
 
-import arc.func.Boolf;
 import arc.graphics.Color;
 import arc.math.geom.Point2;
 import arc.scene.ui.layout.Table;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import me13.core.graphics.TextDraw;
+import me13.core.items.IllegalItemSelection;
 import me13.me.MaterialEnergy;
 import me13.me.net.Netting;
+import me13.me.world.blocks.Prox;
 import mindustry.Vars;
 import mindustry.ctype.UnlockableContent;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.type.Liquid;
 import mindustry.type.LiquidStack;
-import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
-import net.tmmc.util.BoolInt;
-import net.tmmc.util.IllegalItemSelection;
 
 public class StorageMonitor extends Prox {
     public float textWidth;
@@ -57,7 +55,9 @@ public class StorageMonitor extends Prox {
         public void draw() {
             super.draw();
             if(config != null) {
-                if(config instanceof Item item) {
+                if(!isNetEnabled) {
+                    text("OFF");
+                } else if(config instanceof Item item) {
                     int c = 0;
                     for(var s : Netting.getStorage(this)) {
                         if(s.item == item) {
@@ -107,7 +107,7 @@ public class StorageMonitor extends Prox {
 
         @Override
         public Object config() {
-            return new Point2(BoolInt.toInt(config instanceof Item), config.id);
+            return new Point2(config instanceof Item ? 1 : 0, config == null ? -1 : config.id);
         }
 
         @Override

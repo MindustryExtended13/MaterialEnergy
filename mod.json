@@ -8,31 +8,5 @@
   "version": 1.0,
   "minGameVersion": 140,
   "java": true,
-  "contributors": {
-    "append": true,
-    "list": []
-  },
-  "repository": {
-    "name": "MaterialEnergy",
-    "user": "MindustryExtended13"
-  },
-  "bundleCreation": {
-    "enabled": true,
-    "scanType": {
-      "mods": false,
-      "local": true,
-      "named": false
-    },
-    "postTime": 5,
-    "ignoredToScan": [
-      "me-terminal"
-    ]
-  },
-  "coreSettings": {
-    "throwExceptionIntoDialog": true,
-    "fixOtherModsRepository": false,
-    "customLoggerPrefix": "ME13",
-    "useCustomLoggerPrefix": true,
-    "hasErrorRegion": false
-  }
+  "repo": "MindustryExtended13/MaterialEnergy",
 }
