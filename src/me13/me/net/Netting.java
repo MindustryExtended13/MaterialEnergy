@@ -1,9 +1,16 @@
 package me13.me.net;
 
+import arc.func.Cons2;
+import arc.math.Mathf;
 import arc.struct.Seq;
-import me13.core.intergration.IMaterialEnergyBuilding;
 import me13.me.configuration.Channels;
-import me13.me.world.blocks.Cable;
+import me13.me.integration.BuildingMixins;
+import me13.me.integration.NetMixins;
+import me13.me.integration.mixin.IMeNetMixin;
+import me13.me.integration.mixin.IMeSingleNetMixin;
+import me13.me.integration.mixin.ItemNetMixin;
+import me13.me.integration.mixin.LiquidNetMixin;
+import me13.me.integration.mixin.base.IMeNetBaseMixin;
 import me13.me.world.blocks.Controller;
 import mindustry.gen.Building;
 import mindustry.type.Item;
@@ -11,19 +18,24 @@ import mindustry.type.ItemStack;
 import mindustry.type.Liquid;
 import mindustry.type.LiquidStack;
 
-import java.util.HashMap;
-import java.util.Map;
-
+@SuppressWarnings("unchecked")
 public class Netting {
     public static boolean inNet(Building building, Building host) {
-        return building != null && building.team == host.team && ((building instanceof IMaterialEnergyBuilding
-                b && b.canConnectTo(host)) || building.block instanceof Cable);
+        if(building != null && building.team == host.team) {
+            if(BuildingMixins.isMeBuilding(building)) {
+                var mixin = BuildingMixins.getMixin(building);
+                return mixin != null && mixin.canConnectTo(building, host);
+            } else return NetMixins.getCables().contains(building.block);
+        }
+
+        return false;
     }
 
     public static Seq<Building> getConnections(Building building) {
         Seq<Building> result = new Seq<>();
-        if(building instanceof IMaterialEnergyBuilding building1) {
-            building1.getChildren().forEach(build -> {
+        var mixin = BuildingMixins.getMixin(building);
+        if(mixin != null) {
+            mixin.getChildren(building).forEach(build -> {
                 if(inNet(build, building)) {
                     result.add(build);
                 }
@@ -68,74 +80,192 @@ public class Netting {
         Netting.getConnections(building, result);
         int channels = 0;
         for(var build : result) {
-            if(build instanceof IMaterialEnergyBuilding building1) {
-                channels += building1.getChannels();
+            var mixin = BuildingMixins.getMixin(build);
+            if(mixin != null) {
+                channels += mixin.getChannels(build);
             }
         }
         return channels;
     }
 
-    public static LiquidStack[] getStorageLiquid(Building building2) {
-        Map<Liquid, Float> map = new HashMap<>();
-        var result = new Seq<Building>();
-        Netting.getConnections(building2, result);
-        for(var build : result) {
-            if(build instanceof IMaterialEnergyBuilding building) {
-                var module = building.storageLiquid();
-                if(module != null) {
-                    module.each((l, c) -> {
-                        if(map.containsKey(l)) {
-                            map.replace(l, map.get(l)+c);
-                        } else {
-                            map.put(l, c);
-                        }
-                    });
+    public static Seq<IMeNetBaseMixin> getMixinsOf(Building building) {
+        Seq<IMeNetBaseMixin> mixins = new Seq<>();
+        var mixin = BuildingMixins.getMixin(building);
+        if(mixin != null) {
+            var host2 = mixin.getMixinBuild(building);
+            var host = host2 == null ? building : host2;
+            mixins.addAll(mixin.getMixinsSelf(host));
+            NetMixins.getMixins().forEach(mixin2 -> {
+                if(mixin.canUseMixin(host, mixin2) && mixin2.haveMixinIn(host)) {
+                    mixins.add(mixin2);
                 }
-            }
+            });
+        } else {
+            NetMixins.getMixins().forEach(mixin2 -> {
+                if(mixin2.haveMixinIn(building)) {
+                    mixins.add(mixin2);
+                }
+            });
         }
-        Liquid[] id = new Liquid[map.keySet().size()];
-        int[] i = {0, 0};
-        map.keySet().forEach(liquid -> {
-            id[i[0]] = liquid;
-            i[0]++;
-        });
-        LiquidStack[] stacks = new LiquidStack[id.length];
-        for(; i[1] < stacks.length; i[1]++) {
-            var key = id[i[1]];
-            stacks[i[1]] = new LiquidStack(key, map.get(key));
-        }
-        return stacks;
+        return mixins;
     }
 
-    public static ItemStack[] getStorage(Building building2) {
-        Map<Item, Integer> map = new HashMap<>();
+    public static<T extends IMeNetBaseMixin> void eachMixin(Building building,
+                                                            Class<T> mixin,
+                                                            Cons2<T, Building> cons) {
         var result = new Seq<Building>();
-        Netting.getConnections(building2, result);
+        Netting.getConnections(building, result);
         for(var build : result) {
-            if(build instanceof IMaterialEnergyBuilding building) {
-                var module = building.storage();
-                if(module != null) {
-                    module.each((i, c) -> {
-                        if(map.containsKey(i)) {
-                            map.replace(i, map.get(i)+c);
-                        } else {
-                            map.put(i, c);
-                        }
-                    });
-                }
+            var mixin2 = BuildingMixins.getMixin(build);
+            if(mixin2 == null) {
+                var mixins = getMixinsOf(build);
+                mixins.forEach(mixin3 -> {
+                    if(mixin3.getClass() == mixin || mixin3.getClass().getSuperclass() == mixin) {
+                        cons.get((T) mixin3, build);
+                    }
+                });
+            } else {
+                var host2 = mixin2.getMixinBuild(build);
+                var host = host2 == null ? build : host2;
+                var mixins = getMixinsOf(host);
+                mixins.forEach(mixin3 -> {
+                    if(mixin3.getClass() == mixin || mixin3.getClass().getSuperclass() == mixin) {
+                        cons.get((T) mixin3, host);
+                    }
+                });
             }
         }
-        Item[] id = new Item[map.keySet().size()];
-        int[] i = {0, 0};
-        map.keySet().forEach(item -> {
-            id[i[0]] = item;
-            i[0]++;
+    }
+
+    public static<T extends IMeSingleNetMixin> float includeToNet(Building building,
+                                                                  Class<T> mixinClass,
+                                                                  float amount) {
+        final float[] BUFFER = {0, amount};
+        eachMixin(building, mixinClass, (T mixin, Building build) -> {
+            if(BUFFER[1] <= 0) {
+                return;
+            }
+
+            float stored = mixin.getStored(build);
+            float add = Math.min(mixin.getMaximumStored(build) - stored, BUFFER[1]);
+            BUFFER[0] += add;
+            BUFFER[1] -= add;
+            mixin.add(build, add);
         });
-        ItemStack[] stacks = new ItemStack[id.length];
-        for(; i[1] < stacks.length; i[1]++) {
-            var key = id[i[1]];
-            stacks[i[1]] = new ItemStack(key, map.get(key));
-        }
-        return stacks;
+        return BUFFER[1] < 0 ? 0 : BUFFER[1];
+    }
+
+    public static LiquidStack includeToNet(Building building, LiquidStack stack) {
+        Liquid liquid = stack.liquid;
+        final float[] BUFFER = {0, stack.amount};
+        eachMixin(building, LiquidNetMixin.class, (LiquidNetMixin mixin, Building build) -> {
+            if(BUFFER[1] <= 0) {
+                return;
+            }
+
+            float stored = mixin.getStored(build, liquid);
+            float add = Math.min(mixin.getMaximumAccepted(build, liquid) - stored, BUFFER[1]);
+            BUFFER[0] += add;
+            BUFFER[1] -= add;
+            mixin.add(build, liquid, add);
+        });
+        return new LiquidStack(liquid, BUFFER[1] < 0 ? 0 : BUFFER[1]);
+    }
+
+    public static ItemStack includeToNet(Building building, ItemStack stack) {
+        Item item = stack.item;
+        final float[] BUFFER = {0, stack.amount};
+        eachMixin(building, ItemNetMixin.class, (ItemNetMixin mixin, Building build) -> {
+            if(BUFFER[1] <= 0) {
+                return;
+            }
+
+            float stored = mixin.getStored(build, item);
+            float add = Math.min(mixin.getMaximumAccepted(build, item) - stored, BUFFER[1]);
+            BUFFER[0] += add;
+            BUFFER[1] -= add;
+            mixin.add(build, item, add);
+        });
+        return new ItemStack(item, Mathf.round(BUFFER[1] < 0 ? 0 : BUFFER[1]));
+    }
+
+    public static<T extends IMeSingleNetMixin> float excludeFromNet(Building building,
+                                                                    Class<T> mixinClass,
+                                                                    float amount) {
+        final float[] BUFFER = {0, amount};
+        eachMixin(building, mixinClass, (T mixin, Building build) -> {
+            if(BUFFER[1] <= 0) {
+                return;
+            }
+
+            float stored = mixin.getStored(build);
+            stored = Math.min(stored, BUFFER[1]);
+            BUFFER[0] += stored;
+            BUFFER[1] -= stored;
+            mixin.remove(build, stored);
+        });
+        return BUFFER[0];
+    }
+
+    public static LiquidStack excludeFromNet(Building building, LiquidStack stack) {
+        Liquid liquid = stack.liquid;
+        final float[] BUFFER = {0, stack.amount};
+        eachMixin(building, LiquidNetMixin.class, (LiquidNetMixin mixin, Building build) -> {
+            if(BUFFER[1] <= 0) {
+                return;
+            }
+
+            float stored = mixin.getStored(build, liquid);
+            stored = Math.min(stored, BUFFER[1]);
+            BUFFER[0] += stored;
+            BUFFER[1] -= stored;
+            mixin.remove(build, liquid, stored);
+        });
+        return new LiquidStack(liquid, BUFFER[0]);
+    }
+
+    public static ItemStack excludeFromNet(Building building, ItemStack stack) {
+        Item item = stack.item;
+        final float[] BUFFER = {0, stack.amount};
+        eachMixin(building, ItemNetMixin.class, (ItemNetMixin mixin, Building build) -> {
+            float stored = mixin.getStored(build, item);
+            stored = Math.min(stored, BUFFER[1]);
+            BUFFER[0] += stored;
+            BUFFER[1] -= stored;
+            mixin.remove(build, item, stored);
+        });
+        return new ItemStack(item, Mathf.round(BUFFER[0]));
+    }
+
+    public static<T, G extends IMeNetMixin<T>> float getCapFor(Building building, Class<G> mixin, T type) {
+        float[] total = new float[] {0};
+        eachMixin(building, mixin, (G m, Building b) -> {
+            total[0] += m.getStored(b, type);
+        });
+        return total[0];
+    }
+
+    public static<T, G extends IMeNetMixin<T>> float getTotalCapFor(Building building, Class<G> mixin, T type) {
+        float[] total = new float[] {0};
+        eachMixin(building, mixin, (G m, Building b) -> {
+            total[0] += m.getMaximumAccepted(b, type);
+        });
+        return total[0];
+    }
+
+    public static<T extends IMeSingleNetMixin> float getSingleCapFor(Building building, Class<T> mixin) {
+        float[] total = new float[] {0};
+        eachMixin(building, mixin, (T m, Building b) -> {
+            total[0] += m.getStored(b);
+        });
+        return total[0];
+    }
+
+    public static<T extends IMeSingleNetMixin> float getSingleTotalCapFor(Building building, Class<T> mixin) {
+        float[] total = new float[] {0};
+        eachMixin(building, mixin, (T m, Building b) -> {
+            total[0] += m.getMaximumStored(b);
+        });
+        return total[0];
     }
 }

@@ -6,8 +6,6 @@ import arc.graphics.g2d.TextureRegion;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import me13.core.block.instance.AdvancedBlock;
-import me13.core.intergration.IMaterialEnergyBlock;
-import me13.core.intergration.IMaterialEnergyBuilding;
 import me13.me.net.Netting;
 import me13.me.ui.TerminalDialog;
 import mindustry.gen.Building;
@@ -16,7 +14,7 @@ import mindustry.type.LiquidStack;
 import mindustry.world.modules.ItemModule;
 import mindustry.world.modules.LiquidModule;
 
-public class Terminal extends AdvancedBlock implements IMaterialEnergyBlock {
+public class Terminal extends AdvancedBlock {
     public TextureRegion teamRegion;
 
     public Terminal(String name) {
@@ -36,7 +34,7 @@ public class Terminal extends AdvancedBlock implements IMaterialEnergyBlock {
     }
 
     @SuppressWarnings("unused")
-    public class TerminalBuild extends AdvancedBuild implements IMaterialEnergyBuilding {
+    public class TerminalBuild extends AdvancedBuild {
         @Override
         public void buildConfiguration(Table table) {
             if(Netting.isNetEnabled(this)) {
@@ -52,61 +50,6 @@ public class Terminal extends AdvancedBlock implements IMaterialEnergyBlock {
             Draw.color(team.color);
             Draw.rect(teamRegion, x, y, drawrot());
             Draw.reset();
-        }
-
-        @Override
-        public ItemStack acceptItem(ItemStack itemStack) {
-            return null;
-        }
-
-        @Override
-        public ItemStack removeItem(ItemStack itemStack) {
-            return null;
-        }
-
-        @Override
-        public LiquidStack acceptLiquid(LiquidStack liquidStack) {
-            return null;
-        }
-
-        @Override
-        public LiquidStack removeLiquid(LiquidStack liquidStack) {
-            return null;
-        }
-
-        @Override
-        public int getChannels() {
-            return 1;
-        }
-
-        @Override
-        public int maxCapacity() {
-            return 0;
-        }
-
-        @Override
-        public float maxLiquidCapacity() {
-            return 0;
-        }
-
-        @Override
-        public ItemModule storage() {
-            return null;
-        }
-
-        @Override
-        public LiquidModule storageLiquid() {
-            return null;
-        }
-
-        @Override
-        public boolean canConnectTo(Building building) {
-            return true;
-        }
-
-        @Override
-        public Seq<Building> getChildren() {
-            return proximity.copy().filter(b -> b != null && b.block instanceof Cable);
         }
     }
 }

@@ -5,8 +5,7 @@ import me13.core.block.instance.Layer;
 import me13.me.world.blocks.Cable;
 import me13.me.world.blocks.Controller;
 import me13.me.world.blocks.Terminal;
-import me13.me.world.blocks.bus.ExportBus;
-import me13.me.world.blocks.bus.ImportBus;
+import me13.me.world.blocks.bus.EIBus;
 import me13.me.world.blocks.storage.Adapter;
 import me13.me.world.blocks.storage.MeStorageBlock;
 import me13.me.world.blocks.storage.StorageMonitor;
@@ -51,12 +50,12 @@ public class MeErekirBlocks {
             health = 90;
         }};
 
-        importBus = new ImportBus("erekir-import-bus") {{
+        importBus = new EIBus("erekir-import-bus", true) {{
             requirements(Category.effect, ItemStack.with(Items.tungsten, 10, Items.beryllium, 5));
             health = 100;
         }};
 
-        exportBus = new ExportBus("erekir-export-bus") {{
+        exportBus = new EIBus("erekir-export-bus", false) {{
             requirements(Category.effect, ItemStack.with(Items.tungsten, 10, Items.beryllium, 5));
             health = 100;
         }};

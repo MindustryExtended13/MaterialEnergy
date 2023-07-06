@@ -8,16 +8,14 @@ import arc.util.io.Writes;
 import me13.core.graphics.TextDraw;
 import me13.core.items.IllegalItemSelection;
 import me13.me.MaterialEnergy;
+import me13.me.integration.mixin.ItemNetMixin;
+import me13.me.integration.mixin.LiquidNetMixin;
 import me13.me.net.Netting;
 import me13.me.world.blocks.Prox;
 import mindustry.Vars;
 import mindustry.ctype.UnlockableContent;
 import mindustry.type.Item;
-import mindustry.type.ItemStack;
 import mindustry.type.Liquid;
-import mindustry.type.LiquidStack;
-import mindustry.world.modules.ItemModule;
-import mindustry.world.modules.LiquidModule;
 
 public class StorageMonitor extends Prox {
     public float textWidth;
@@ -58,21 +56,11 @@ public class StorageMonitor extends Prox {
                 if(!isNetEnabled) {
                     text("OFF");
                 } else if(config instanceof Item item) {
-                    int c = 0;
-                    for(var s : Netting.getStorage(this)) {
-                        if(s.item == item) {
-                            c = s.amount;
-                        }
-                    }
-                    text(item.localizedName + "\n" + MaterialEnergy.formatItem(c));
+                    int storage = (int) Netting.getCapFor(this, ItemNetMixin.class, item);
+                    text(item.localizedName + "\n" + MaterialEnergy.formatItem(storage));
                 } else if(config instanceof Liquid liquid) {
-                    float c = 0;
-                    for(var s : Netting.getStorageLiquid(this)) {
-                        if(s.liquid == liquid) {
-                            c = s.amount;
-                        }
-                    }
-                    text(liquid.localizedName + "\n" + MaterialEnergy.formatLiquid(c));
+                    float storage = Netting.getCapFor(this, LiquidNetMixin.class, liquid);
+                    text(liquid.localizedName + "\n" + MaterialEnergy.formatLiquid(storage));
                 } else {
                     text("ERROR");
                 }
@@ -108,46 +96,6 @@ public class StorageMonitor extends Prox {
         @Override
         public Object config() {
             return new Point2(config instanceof Item ? 1 : 0, config == null ? -1 : config.id);
-        }
-
-        @Override
-        public ItemStack acceptItem(ItemStack itemStack) {
-            return null;
-        }
-
-        @Override
-        public ItemStack removeItem(ItemStack itemStack) {
-            return null;
-        }
-
-        @Override
-        public LiquidStack acceptLiquid(LiquidStack liquidStack) {
-            return null;
-        }
-
-        @Override
-        public LiquidStack removeLiquid(LiquidStack liquidStack) {
-            return null;
-        }
-
-        @Override
-        public int maxCapacity() {
-            return 0;
-        }
-
-        @Override
-        public float maxLiquidCapacity() {
-            return 0;
-        }
-
-        @Override
-        public ItemModule storage() {
-            return null;
-        }
-
-        @Override
-        public LiquidModule storageLiquid() {
-            return null;
         }
     }
 }

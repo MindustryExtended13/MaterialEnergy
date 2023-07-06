@@ -4,7 +4,11 @@ import arc.Core;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.util.Scaling;
+import me13.me.integration.BoxMixins;
+import me13.me.integration.mixin.ItemNetMixin;
+import me13.me.integration.mixin.LiquidNetMixin;
 import me13.me.net.Netting;
+import mindustry.Vars;
 import mindustry.gen.Building;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
@@ -35,32 +39,14 @@ public class TerminalDialog extends BaseDialog {
                 pane[0] = pane2;
             }).update(ignored -> {
                 int cols = (int) ((Core.scene.getWidth()*0.8)/200);
-                int i = 0;
+                final int[] i = {0};
                 pane[0].clearChildren();
-                for(var stack : Netting.getStorage(building)) {
-                    pane[0].table(t -> {
-                        t.add(new Image(stack.item.uiIcon).setScaling(Scaling.fit)).size(40);
-                        t.table(info -> {
-                            info.add(stack.item.localizedName).left().row();
-                            info.add("x" + stack.amount).left();
-                        }).pad(6).grow();
-                    }).left().height(50);
-                    if(++i % cols == 0) {
+                BoxMixins.getMixins().forEach(mixin -> {
+                    mixin.buildTerminal(pane[0], building);
+                    if(++i[0] % cols == 0) {
                         pane[0].row();
                     }
-                }
-                for(var stack : Netting.getStorageLiquid(building)) {
-                    pane[0].table(t -> {
-                        t.add(new Image(stack.liquid.uiIcon).setScaling(Scaling.fit)).size(40);
-                        t.table(info -> {
-                            info.add(stack.liquid.localizedName).left().row();
-                            info.add(Math.round(stack.amount) + "mb").left();
-                        }).pad(6).grow();
-                    }).left().height(50);
-                    if(++i % cols == 0) {
-                        pane[0].row();
-                    }
-                }
+                });
             }).grow();
         }).center();
     }

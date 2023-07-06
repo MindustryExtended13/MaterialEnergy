@@ -3,27 +3,17 @@ package me13.me.world.blocks;
 import arc.Events;
 import arc.func.Prov;
 import arc.graphics.Color;
-import arc.math.Mathf;
 import arc.scene.ui.layout.Table;
-import arc.struct.Seq;
 import arc.util.Eachable;
-import arc.util.Log;
-import me13.core.block.instance.AdvancedBlock;
 import me13.core.block.instance.Layer;
-import me13.core.intergration.IMaterialEnergyBlock;
-import me13.core.intergration.IMaterialEnergyBuilding;
 import me13.me.configuration.Channels;
 import me13.me.net.Netting;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType;
-import mindustry.gen.Building;
 import mindustry.gen.Tex;
-import mindustry.type.ItemStack;
-import mindustry.type.LiquidStack;
-import mindustry.world.modules.ItemModule;
-import mindustry.world.modules.LiquidModule;
+import mindustry.ui.Styles;
 
-public class Controller extends AdvancedBlock implements IMaterialEnergyBlock {
+public class Controller extends Prox {
     public static Color color;
     private static int time;
     public Prov<Layer> top;
@@ -48,7 +38,6 @@ public class Controller extends AdvancedBlock implements IMaterialEnergyBlock {
 
     public Controller(String name) {
         super(name);
-        update = true;
         configurable = true;
     }
 
@@ -65,20 +54,17 @@ public class Controller extends AdvancedBlock implements IMaterialEnergyBlock {
         scheme.load(this);
     }
 
-    public class ControllerBuild extends AdvancedBuild implements IMaterialEnergyBuilding {
-        public Seq<Building> cableProximity = new Seq<>();
-        public boolean netEnabled = false;
+    public class ControllerBuild extends ProxBuild {
         public Layer instance = null;
-        public int timer = 0;
 
-        @Override
         public int getChannelsAdd() {
             return enabled() ? Controller.this.getChannels() : 0;
         }
 
         @Override
         public void updateTile() {
-            updateState();
+            super.updateTile();
+
             if(instance == null) {
                 instance = top.get();
                 instance.load(block);
@@ -86,7 +72,7 @@ public class Controller extends AdvancedBlock implements IMaterialEnergyBlock {
 
             if(!enabled()) {
                 instance.color = Color.white;
-            } else if(netEnabled) {
+            } else if(isNetEnabled) {
                 instance.color = color;
             } else {
                 instance.color = Color.red;
@@ -104,81 +90,10 @@ public class Controller extends AdvancedBlock implements IMaterialEnergyBlock {
         }
 
         @Override
-        public ItemStack acceptItem(ItemStack itemStack) {
-            return null;
-        }
-
-        @Override
-        public ItemStack removeItem(ItemStack itemStack) {
-            return null;
-        }
-
-        @Override
-        public LiquidStack acceptLiquid(LiquidStack liquidStack) {
-            return null;
-        }
-
-        @Override
-        public LiquidStack removeLiquid(LiquidStack liquidStack) {
-            return null;
-        }
-
-        @Override
-        public int getChannels() {
-            return 0;
-        }
-
-        @Override
-        public int maxCapacity() {
-            return 0;
-        }
-
-        @Override
-        public float maxLiquidCapacity() {
-            return 0;
-        }
-
-        @Override
-        public ItemModule storage() {
-            return null;
-        }
-
-        @Override
-        public LiquidModule storageLiquid() {
-            return null;
-        }
-
-        @Override
-        public boolean canConnectTo(Building building) {
-            return true;
-        }
-
-        @Override
         public void buildConfiguration(Table table) {
-            table.table((t) -> {
-                t.setBackground(Tex.button);
-            }).update(table2 -> {
-                table2.clearChildren();
-                table2.add(Netting.getChannels(this) + "/" +
-                        Netting.getMaximumChannels(this) + " Channels used");
-            });
-        }
-
-        @Override
-        public void onProximityUpdate() {
-            super.onProximityUpdate();
-            cableProximity = proximity.copy().filter(b -> b != null &&
-                    (b.block instanceof Cable || b instanceof ControllerBuild));
-        }
-
-        @Override
-        public Seq<Building> getChildren() {
-            return cableProximity;
-        }
-
-        @Override
-        public void updateState() {
-            netEnabled = Netting.isNetEnabled(this);
+            table.setBackground(Styles.black5);
+            table.add(Netting.getChannels(this) + "/" + Netting.getMaximumChannels(this)
+                    + " Channels used").pad(6, 6, 6, 6);
         }
     }
 }

@@ -5,8 +5,7 @@ import me13.core.block.instance.Layer;
 import me13.me.world.blocks.Cable;
 import me13.me.world.blocks.Controller;
 import me13.me.world.blocks.Terminal;
-import me13.me.world.blocks.bus.ExportBus;
-import me13.me.world.blocks.bus.ImportBus;
+import me13.me.world.blocks.bus.EIBus;
 import me13.me.world.blocks.storage.Adapter;
 import me13.me.world.blocks.storage.MeStorageBlock;
 import me13.me.world.blocks.storage.StorageMonitor;
@@ -53,12 +52,12 @@ public class MeSerpuloBlocks {
             health = 90;
         }};
 
-        importBus = new ImportBus("import-bus") {{
+        importBus = new EIBus("import-bus", true) {{
             requirements(Category.effect, ItemStack.with(Items.graphite, 10, Items.copper, 5));
             health = 100;
         }};
 
-        exportBus = new ExportBus("export-bus") {{
+        exportBus = new EIBus("export-bus", false) {{
             requirements(Category.effect, ItemStack.with(Items.graphite, 10, Items.copper, 5));
             health = 100;
         }};

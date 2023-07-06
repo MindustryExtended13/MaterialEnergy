@@ -1,12 +1,15 @@
 package me13.me;
 
 import arc.Core;
+import arc.Events;
 import arc.struct.Seq;
 import me13.me.configuration.MeConfiguration;
 import me13.me.content.MeBlocks;
 import me13.me.content.MeTech;
+import me13.me.integration.*;
 import mindustry.Vars;
 import mindustry.ctype.UnlockableContent;
+import mindustry.game.EventType;
 import mindustry.mod.Mod;
 
 import java.util.Map;
@@ -67,5 +70,23 @@ public class MaterialEnergy extends Mod {
     @Override
     public void init() {
         MeConfiguration.load();
+    }
+
+    public MaterialEnergy() {
+        Events.on(ModInvokeEvent.class, ignored -> {
+            invoke("inf", InformatronicsInvoker::load);
+        });
+
+        Events.on(EventType.ClientLoadEvent.class, ignored -> {
+            MaterialEnergyInvoker.load(); //loading self-invoker
+            Events.fire(new ModInvokeEvent());
+        });
+    }
+
+    public static void invoke(String name, Runnable runnable) {
+        var meta = Vars.mods.getMod(name);
+        if(meta != null && meta.enabled()) {
+            runnable.run();
+        }
     }
 }

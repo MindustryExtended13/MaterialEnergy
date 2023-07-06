@@ -3,8 +3,8 @@ package me13.me.world.blocks;
 import me13.core.block.instance.AdvancedBlock;
 import me13.core.block.instance.EnumTextureMapping;
 import me13.core.block.instance.Layer;
-import me13.core.intergration.IMaterialEnergyBlock;
-import me13.core.intergration.IMaterialEnergyBuilding;
+import me13.me.integration.BuildingMixins;
+import me13.me.integration.NetMixins;
 
 public class Cable extends AdvancedBlock {
     public Cable(String name) {
@@ -12,11 +12,12 @@ public class Cable extends AdvancedBlock {
         drawBase = false;
         layers.add(new Layer(this, "-", EnumTextureMapping.TF_TYPE) {{
             rotate = false;
-            hand = (self, other, tile) -> ((other != null && other.block instanceof Cable)
-                    || (tile.build instanceof IMaterialEnergyBuilding b && b.canConnectTo(self)))
+            hand = (self, other, tile) -> other != null && (NetMixins.getCables().contains(other.block)
+                    || (BuildingMixins.isMeBuilding(other) && BuildingMixins.getMixin(other).canConnectTo(
+                            other, self)))
                     && tile.build != null && tile.build.team == self.team;
-            hand2 = (self, other, tile) -> other != null && (other.block instanceof Cable
-                    || other.block instanceof IMaterialEnergyBlock);
+            hand2 = (self, other, tile) -> other != null && (NetMixins.getCables().contains(other.block)
+                    || BuildingMixins.meBlocks.contains(other.block));
         }});
     }
 }

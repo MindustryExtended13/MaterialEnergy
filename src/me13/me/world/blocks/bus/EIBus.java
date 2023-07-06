@@ -6,42 +6,44 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Point2;
 import arc.scene.ui.layout.Table;
-import arc.struct.Seq;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
-import me13.core.intergration.IMaterialEnergyBuilding;
 import me13.core.items.IllegalItemSelection;
 import me13.me.net.Netting;
-import me13.me.world.blocks.Prox;
 import mindustry.Vars;
 import mindustry.gen.Building;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.type.Liquid;
 import mindustry.type.LiquidStack;
-import mindustry.world.modules.ItemModule;
-import mindustry.world.modules.LiquidModule;
 
-public class ExportBus extends Prox {
+public class EIBus extends Bus {
     public TextureRegion item, liquid;
+    public boolean isImportMode;
 
-    public ExportBus(String name) {
+    public EIBus(String name, boolean isImport) {
         super(name);
-        outputsLiquid = true;
-        acceptsItems = false;
+        isImportMode = isImport;
+        outputsLiquid = !isImport;
+        acceptsItems = isImport;
         hasItems = hasLiquids = true;
         itemCapacity = (int) (liquidCapacity = 1);
         configurable = true;
 
-        config(Point2.class, (ExportBusBuild b, Point2 p) -> {
+        config(Point2.class, (EIBusBuild b, Point2 p) -> {
             b.item = Vars.content.item(p.x);
             b.liquid = Vars.content.liquid(p.y);
         });
 
-        configClear((ExportBusBuild b) -> {
+        configClear((EIBusBuild b) -> {
             b.item = null;
             b.liquid = null;
         });
+    }
+
+    @Override
+    public boolean outputsItems() {
+        return !isImportMode && super.outputsItems();
     }
 
     @Override
@@ -63,49 +65,53 @@ public class ExportBus extends Prox {
         removeBar("items");
     }
 
-    public class ExportBusBuild extends ProxBuild {
+    public class EIBusBuild extends BusBuild {
         public Liquid liquid;
         public Item item;
 
         @Override
         public void updateTile() {
             super.updateTile();
-            dump(item);
-            if(liquid != null && liquids.get(liquid) >= 1) {
-                for(Building building : proximity) {
-                    if(building != null && building.acceptLiquid(this, liquid)) {
-                        if(building.liquids.get(liquid) < building.block.liquidCapacity) {
-                            building.liquids.set(liquid, Math.min(building.liquids.get(liquid)+1,
-                                    building.block.liquidCapacity));
-                            liquids.remove(liquid, 1);
+
+            if(!isImportMode) {
+                dump(item);
+                if(liquid != null && liquids.get(liquid) >= 1) {
+                    for(Building building : proximity) {
+                        if(building != null && building.acceptLiquid(this, liquid)) {
+                            if(building.liquids.get(liquid) < building.block.liquidCapacity) {
+                                building.liquids.set(liquid, Math.min(building.liquids.get(liquid)+1,
+                                        building.block.liquidCapacity));
+                                liquids.remove(liquid, 1);
+                            }
                         }
                     }
                 }
             }
 
             if(isNetEnabled) {
-                Seq<Building> seq = new Seq<>();
-                Netting.getConnections(this, seq);
-                if(item != null && items.get(item) < itemCapacity) {
-                    for(var build : seq) {
-                        if(build instanceof IMaterialEnergyBuilding building && build != this) {
-                            var s = building.storage();
-                            if(s != null && s.has(item)) {
-                                acceptItem(building.removeItem(new ItemStack(item, 1)));
-                                break;
-                            }
+                if(isImportMode) {
+                    items.each((i, c) -> {
+                        if(c > 0 && i != null) {
+                            var stack = Netting.includeToNet(this, new ItemStack(i, c));
+                            acceptStack(stack.item, stack.amount, this);
+                            removeStack(stack.item, c - stack.amount);
                         }
+                    });
+                    liquids.each((i, c) -> {
+                        if(c > 0 && i != null) {
+                            var stack = Netting.includeToNet(this, new LiquidStack(i, c));
+                            acceptStack(stack.liquid, stack.amount, this);
+                            liquids.remove(stack.liquid, c - stack.amount);
+                        }
+                    });
+                } else {
+                    if(item != null && items.get(item) < itemCapacity) {
+                        var excluded = Netting.excludeFromNet(this, new ItemStack(item, 1));
+                        items.add(excluded.item, acceptStack(excluded.item, excluded.amount, this));
                     }
-                }
-                if(liquid != null && liquids.get(liquid) < liquidCapacity) {
-                    for(var build : seq) {
-                        if(build instanceof IMaterialEnergyBuilding building && build != this) {
-                            var s = building.storageLiquid();
-                            if(s != null && s.get(liquid) > 0) {
-                                acceptLiquid(building.removeLiquid(new LiquidStack(liquid, 1)));
-                                break;
-                            }
-                        }
+                    if(liquid != null && liquids.get(liquid) < liquidCapacity) {
+                        var excluded = Netting.excludeFromNet(this, new LiquidStack(liquid, 1));
+                        liquids.add(excluded.liquid, acceptStack(excluded.liquid, excluded.amount, this));
                     }
                 }
             }
@@ -119,9 +125,9 @@ public class ExportBus extends Prox {
         @Override
         public void draw() {
             Draw.color(liquid == null ? Color.white : liquid.color);
-            Draw.rect(ExportBus.this.liquid, x, y);
+            Draw.rect(EIBus.this.liquid, x, y);
             Draw.color(item == null ? Color.white : item.color);
-            Draw.rect(ExportBus.this.item, x, y);
+            Draw.rect(EIBus.this.item, x, y);
             Draw.reset();
             super.draw();
         }
@@ -151,32 +157,15 @@ public class ExportBus extends Prox {
 
         @Override
         public boolean acceptItem(Building source, Item item) {
-            return false;
+            return isImportMode ? (items.get(item) < getMaximumAccepted(item)) &&
+                    (item == this.item || this.item == null) : source == this;
         }
 
         @Override
         public boolean acceptLiquid(Building source, Liquid liquid) {
-            return false;
-        }
-
-        @Override
-        public int maxCapacity() {
-            return 0;
-        }
-
-        @Override
-        public float maxLiquidCapacity() {
-            return 0;
-        }
-
-        @Override
-        public ItemModule storage() {
-            return new ItemModule();
-        }
-
-        @Override
-        public LiquidModule storageLiquid() {
-            return new LiquidModule();
+            return isImportMode ? (liquids.get(liquid) < liquidCapacity) &&
+                    (liquid == this.liquid || this.liquid == null) : source == this;
         }
     }
 }
+

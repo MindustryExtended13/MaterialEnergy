@@ -1,20 +1,9 @@
 apply plugin: "java"
 version '1.5.0'
 
-targetCompatibility = 8
-sourceCompatibility = JavaVersion.VERSION_16
-
 sourceSets.main {
     java.srcDirs = ["src"]
     resources.srcDirs = ["assets"]
-}
-
-repositories {
-    mavenCentral()
-
-    maven {
-        url 'https://www.jitpack.io'
-    }
 }
 
 ext {
@@ -26,27 +15,54 @@ ext {
 }
 
 allprojects {
+    apply plugin: "java"
+
     tasks.withType(JavaCompile).tap {
         configureEach {
             options.compilerArgs.addAll(['--release', '8'])
         }
     }
+
+    repositories {
+        mavenCentral()
+
+        maven {
+            url 'https://www.jitpack.io'
+        }
+    }
+
+    dependencies {
+        annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
+        compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
+        compileOnly "com.github.Anuken.MindustryJitpack:core:$mindustryVersion"
+        compileOnly 'org.jetbrains:annotations:23.0.0'
+    }
+
+    targetCompatibility = 8
+    sourceCompatibility = JavaVersion.VERSION_16
 }
 
 dependencies {
-    //core
-    annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
-    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
-    compileOnly "com.github.Anuken.MindustryJitpack:core:$mindustryVersion"
-
+    //ME13
     implementation "com.github.MindustryExtended13.Me13Core:items:$ME13CoreVersion"
     implementation "com.github.MindustryExtended13.Me13Core:block:$ME13CoreVersion"
     implementation "com.github.MindustryExtended13.Me13Core:text-draw:$ME13CoreVersion"
-    implementation "com.github.MindustryExtended13.Me13Core:intergration:$ME13CoreVersion"
     implementation "com.github.MindustryExtended13.Me13Core:configuration:$ME13CoreVersion"
 
-    compileOnly 'org.jetbrains:annotations:23.0.0'
+    //other
+    implementation project("integration")
     implementation "com.google.code.gson:gson:2.10.1"
+    implementation "com.github.MindustryExtended13.informatronics:tools:1.0"
+    compileOnly "com.github.MindustryExtended13.informatronics:integration:1.0"
+}
+
+project(":integration") {
+    apply plugin: "java"
+
+    sourceSets.main {
+        java.srcDirs = ["src"]
+        resources.srcDirs = []
+    }
 }
 
 //force arc version
