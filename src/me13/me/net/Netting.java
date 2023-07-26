@@ -35,13 +35,13 @@ public class Netting {
         Seq<Building> result = new Seq<>();
         var mixin = BuildingMixins.getMixin(building);
         if(mixin != null) {
-            mixin.getChildren(building).forEach(build -> {
+            mixin.getChildren(building).each(build -> {
                 if(inNet(build, building)) {
                     result.add(build);
                 }
             });
         } else if(building.enabled()) {
-            building.proximity.forEach(build -> {
+            building.proximity.each(build -> {
                 if(inNet(build, building)) {
                     result.add(build);
                 }
@@ -51,7 +51,7 @@ public class Netting {
     }
 
     public static void getConnections(Building source, Seq<Building> buildings) {
-        getConnections(source).forEach(b -> {
+        getConnections(source).each(b -> {
             if(!buildings.contains(b)) {
                 buildings.add(b);
                 getConnections(b, buildings);
@@ -95,13 +95,13 @@ public class Netting {
             var host2 = mixin.getMixinBuild(building);
             var host = host2 == null ? building : host2;
             mixins.addAll(mixin.getMixinsSelf(host));
-            NetMixins.getMixins().forEach(mixin2 -> {
+            NetMixins.getMixins().each(mixin2 -> {
                 if(mixin.canUseMixin(host, mixin2) && mixin2.haveMixinIn(host)) {
                     mixins.add(mixin2);
                 }
             });
         } else {
-            NetMixins.getMixins().forEach(mixin2 -> {
+            NetMixins.getMixins().each(mixin2 -> {
                 if(mixin2.haveMixinIn(building)) {
                     mixins.add(mixin2);
                 }
@@ -119,7 +119,7 @@ public class Netting {
             var mixin2 = BuildingMixins.getMixin(build);
             if(mixin2 == null) {
                 var mixins = getMixinsOf(build);
-                mixins.forEach(mixin3 -> {
+                mixins.each(mixin3 -> {
                     if(mixin3.getClass() == mixin || mixin3.getClass().getSuperclass() == mixin) {
                         cons.get((T) mixin3, build);
                     }
@@ -128,7 +128,7 @@ public class Netting {
                 var host2 = mixin2.getMixinBuild(build);
                 var host = host2 == null ? build : host2;
                 var mixins = getMixinsOf(host);
-                mixins.forEach(mixin3 -> {
+                mixins.each(mixin3 -> {
                     if(mixin3.getClass() == mixin || mixin3.getClass().getSuperclass() == mixin) {
                         cons.get((T) mixin3, host);
                     }

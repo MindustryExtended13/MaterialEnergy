@@ -58,7 +58,7 @@ public class MaterialEnergy extends Mod {
         MeBlocks.load();
         MeTech.load();
 
-        Vars.content.blocks().forEach(block -> {
+        Vars.content.blocks().each(block -> {
             if(block.name.startsWith("me-erekir-")) {
                 String n = block.name.replace("erekir-", "");
                 block.localizedName = Core.bundle.get("block." + n + ".name");
