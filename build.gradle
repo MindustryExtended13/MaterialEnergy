@@ -100,8 +100,8 @@ task jarAndroid {
         //d8 doesn't work on windows (but required for Actions), so it set it to d8.bat if needed.
         def d8command = isWindows() ? "d8.bat" : "d8"
 
-        //dex and desugar files
-        """$sdkRoot/build-tools/30.0.3/$d8command $dependencies --min-api 14 --output 
+        //dex and desugar files - require d8 in your path
+        """$d8command $dependencies --min-api 14 --output 
             ${project.archivesBaseName}Android.jar ${project.archivesBaseName}Desktop.jar"""
             .execute(null, new File("$buildDir/libs")).waitForProcessOutput(System.out, System.err)
     }
