@@ -41,7 +41,7 @@ public class TerminalDialog extends BaseDialog {
                 int cols = (int) ((Core.scene.getWidth()*0.8)/200);
                 final int[] i = {0};
                 pane[0].clearChildren();
-                BoxMixins.getMixins().forEach(mixin -> {
+                BoxMixins.getMixins().each(mixin -> {
                     mixin.buildTerminal(pane[0], building);
                     if(++i[0] % cols == 0) {
                         pane[0].row();

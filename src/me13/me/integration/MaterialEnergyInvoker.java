@@ -49,7 +49,7 @@ public class MaterialEnergyInvoker {
         BuildingMixins.register(Terminal.TerminalBuild.class, NO_STORAGE_MIXIN);
         BuildingMixins.register(EIBus.EIBusBuild.class, NO_STORAGE_MIXIN);
 
-        Vars.content.blocks().forEach(block -> {
+        Vars.content.blocks().each(block -> {
             if(block.name.startsWith("me-") && BuildingMixins.isMeBuilding(block.buildType.get())) {
                 BuildingMixins.meBlocks.add(block);
             }
@@ -80,7 +80,7 @@ public class MaterialEnergyInvoker {
             }
         });
 
-        Vars.content.items().forEach(item -> {
+        Vars.content.items().each(item -> {
             BoxMixins.register(new IMeBoxMixin() {
                 @Override
                 public String name() {
@@ -104,7 +104,7 @@ public class MaterialEnergyInvoker {
             });
         });
 
-        Vars.content.liquids().forEach(liquid -> {
+        Vars.content.liquids().each(liquid -> {
             BoxMixins.register(new IMeBoxMixin() {
                 @Override
                 public String name() {
