@@ -10,7 +10,6 @@ import me13.me.configuration.Channels;
 import me13.me.net.Netting;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType;
-import mindustry.gen.Tex;
 import mindustry.ui.Styles;
 
 public class Controller extends Prox {

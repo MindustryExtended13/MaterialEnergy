@@ -1,7 +1,6 @@
 package me13.me.integration;
 
 import arc.struct.Seq;
-import java.util.Objects;
 import mindustry.world.Block;
 import me13.me.integration.mixin.base.IMeNetBaseMixin;
 
@@ -10,11 +9,11 @@ public class NetMixins {
     private static final Seq<Block> cables = new Seq<>();
 
     public static<T extends IMeNetBaseMixin> void register(T mixin) {
-        mixins.add(Objects.requireNonNull(mixin));
+        if(mixin != null) mixins.add(mixin);
     }
 
     public static void registerCable(Block block) {
-        cables.add(Objects.requireNonNull(block));
+        if(block != null) cables.add(block);
     }
 
     public static Seq<IMeNetBaseMixin> getMixins() {

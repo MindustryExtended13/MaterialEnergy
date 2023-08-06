@@ -12,19 +12,7 @@ import mindustry.ctype.UnlockableContent;
 import mindustry.game.EventType;
 import mindustry.mod.Mod;
 
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-
 public class MaterialEnergy extends Mod {
-    private static final NavigableMap<Integer, String> suffixes = new TreeMap<>();
-
-    static {
-        suffixes.put(1000, "K");
-        suffixes.put(1000000, "M");
-        suffixes.put(1000000000, "B");
-    }
-
     public static String formatItem(int count) {
         return 'x' + format(count);
     }
@@ -33,17 +21,18 @@ public class MaterialEnergy extends Mod {
         return format(Math.round(count)) + "mb";
     }
 
+    private static String _func_14103591(int _integer_1521, int _integer_8291) {
+        float _float_6720 = (float) _integer_1521 / _integer_8291;
+        String _string_1230 = _float_6720 + "";
+        return _string_1230.substring(0, Math.min(_string_1230.length()-1, 5));
+    }
+
     public static String format(int value) {
         if (value < 0) return "-" + format(-value);
-        if (value < 1000) return Long.toString(value);
-
-        Map.Entry<Integer, String> e = suffixes.floorEntry(value);
-        Integer divideBy = e.getKey();
-        String suffix = e.getValue();
-
-        int truncated = value / (divideBy / 10);
-        boolean hasDecimal = truncated < 100 && (truncated / 10d) != ((double) truncated / 10);
-        return hasDecimal ? (truncated / 10d) + suffix : (truncated / 10) + suffix;
+        if (value < 1000) return value + "";
+        if (value < 1000000) return _func_14103591(value, 1000) + "K";
+        if (value < 1000000000) return _func_14103591(value, 1000000) + "M";
+        return _func_14103591(value, 1000000000) + "B";
     }
 
     public static Seq<UnlockableContent> liqItem() {
@@ -73,20 +62,18 @@ public class MaterialEnergy extends Mod {
     }
 
     public MaterialEnergy() {
-        Events.on(ModInvokeEvent.class, ignored -> {
-            invoke("inf", InformatronicsInvoker::load);
-        });
-
         Events.on(EventType.ClientLoadEvent.class, ignored -> {
             MaterialEnergyInvoker.load(); //loading self-invoker
             Events.fire(new ModInvokeEvent());
         });
     }
 
+    /*
     public static void invoke(String name, Runnable runnable) {
         var meta = Vars.mods.getMod(name);
         if(meta != null && meta.enabled()) {
             runnable.run();
         }
     }
+     */
 }

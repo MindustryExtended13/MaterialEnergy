@@ -1,14 +1,8 @@
 package me13.me.ui;
 
 import arc.Core;
-import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
-import arc.util.Scaling;
 import me13.me.integration.BoxMixins;
-import me13.me.integration.mixin.ItemNetMixin;
-import me13.me.integration.mixin.LiquidNetMixin;
-import me13.me.net.Netting;
-import mindustry.Vars;
 import mindustry.gen.Building;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;

@@ -1,8 +1,6 @@
 package me13.me.integration;
 
 import arc.struct.ObjectMap;
-import java.util.Objects;
-
 import arc.struct.Seq;
 import me13.me.integration.mixin.IMeBuildingMixin;
 import me13.me.integration.mixin.base.IMeBuildingBaseMixin;
@@ -14,7 +12,7 @@ public class BuildingMixins {
     public static final Seq<Block> meBlocks = new Seq<>();
 
     public static<T extends IMeBuildingBaseMixin, G extends Building> void register(Class<G> building, T mixin) {
-        mixins.put(Objects.requireNonNull(building), Objects.requireNonNull(mixin));
+        if(building != null && mixin != null) mixins.put(building, mixin);
     }
 
     public static<T extends IMeBuildingBaseMixin, G extends Building> void register(T mixin, Class<G> building) {

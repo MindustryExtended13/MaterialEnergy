@@ -4,15 +4,9 @@ import arc.Core;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
 import arc.scene.ui.layout.Table;
-import arc.struct.Seq;
 import me13.core.block.instance.AdvancedBlock;
 import me13.me.net.Netting;
 import me13.me.ui.TerminalDialog;
-import mindustry.gen.Building;
-import mindustry.type.ItemStack;
-import mindustry.type.LiquidStack;
-import mindustry.world.modules.ItemModule;
-import mindustry.world.modules.LiquidModule;
 
 public class Terminal extends AdvancedBlock {
     public TextureRegion teamRegion;

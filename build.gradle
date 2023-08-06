@@ -7,8 +7,7 @@ sourceSets.main {
 }
 
 ext {
-    ME13CoreVersion = 'v1.5'
-    modCoreVersion = '1.0.6b'
+    ME13CoreVersion = 'v1.7-beta'
     mindustryVersion = 'v145'
     jabelVersion = "93fde537c7"
     sdkRoot = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT")
@@ -52,8 +51,6 @@ dependencies {
     //other
     implementation project("integration")
     implementation "com.google.code.gson:gson:2.10.1"
-    implementation "com.github.MindustryExtended13.informatronics:tools:1.0"
-    compileOnly "com.github.MindustryExtended13.informatronics:integration:1.0"
 }
 
 project(":integration") {
