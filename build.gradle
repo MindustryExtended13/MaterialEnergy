@@ -39,6 +39,15 @@ allprojects {
 
     targetCompatibility = 8
     sourceCompatibility = JavaVersion.VERSION_16
+
+    //force arc version
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { details ->
+            if(details.requested.group == 'com.github.Anuken.Arc') {
+                details.useVersion "$mindustryVersion"
+            }
+        }
+    }
 }
 
 dependencies {
@@ -59,15 +68,6 @@ project(":integration") {
     sourceSets.main {
         java.srcDirs = ["src"]
         resources.srcDirs = []
-    }
-}
-
-//force arc version
-configurations.configureEach {
-    resolutionStrategy.eachDependency { details ->
-        if(details.requested.group == 'com.github.Anuken.Arc') {
-            details.useVersion "$mindustryVersion"
-        }
     }
 }
 
@@ -95,7 +95,7 @@ task jarAndroid {
         }.join(" ")
 
         //d8 doesn't work on windows (but required for Actions), so it set it to d8.bat if needed.
-        def d8command = isWindows() ? "d8.bat" : "d8"
+        def d8command = isWindows() ? "$sdkRoot/build-tools/30.0.3/d8.bat" : "d8"
 
         //dex and desugar files - require d8 in your path
         """$d8command $dependencies --min-api 14 --output 
